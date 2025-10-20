@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Jobs() {
   const [jobs, setJobs] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://127.0.0.1:5000/jobs")
@@ -25,7 +27,12 @@ function Jobs() {
               <p className="mb-0"><strong>Salary:</strong> {job.salary}</p>
             </div>
             {/* Apply Button */}
-            <button className="btn btn-primary">Apply</button>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => navigate(`/apply/${job.id}`)}
+            >
+              Apply
+            </button>
           </div>
         ))}
       </div>

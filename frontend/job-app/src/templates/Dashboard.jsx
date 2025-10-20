@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 
-function Dashboard() {
+function Dashboard({ onLogout }) {
   const [currentJob, setCurrentJob] = useState([])
   useEffect(() => {
     const employer_id = localStorage.getItem("user_id");
@@ -13,7 +13,7 @@ function Dashboard() {
 
   return (
     <>
-      <Navbar />
+      <Navbar onLogout={onLogout} />
       <div>
         <div>
           <h2 className="text-center mt-4">Welcome to your Dashboard</h2>

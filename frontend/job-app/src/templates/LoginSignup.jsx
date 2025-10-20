@@ -18,6 +18,7 @@ function LoginSignup({ onLogin }) {
 
       if (isLogin && res.data.user_id) {
         localStorage.setItem("user_id", res.data.user_id);
+        localStorage.setItem("username", username);
         onLogin(); // go to Home after successful login
       }
     } catch (err) {

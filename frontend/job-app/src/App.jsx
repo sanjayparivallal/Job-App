@@ -4,6 +4,7 @@ import LoginSignup from "./templates/LoginSignup";
 import Home from "./templates/Home";
 import Dashboard from "./templates/Dashboard";
 import JobForm from "./templates/JobForm";
+import Apply from "./templates/Apply";
 
 function App() {
   // Track whether user is logged in (based on localStorage)
@@ -19,6 +20,7 @@ function App() {
   // On logout — clear user info
   const handleLogout = () => {
     localStorage.removeItem("user_id");
+    localStorage.removeItem("username");
     setIsAuthenticated(false);
   };
 
@@ -38,6 +40,9 @@ function App() {
 
             {/* Create Job Page */}
             <Route path="/create-job" element={<JobForm onLogout={handleLogout} />} />
+
+            {/* Apply Page */}
+            <Route path="/apply/:jobId" element={<Apply />} />
 
             {/* Fallback for unknown paths */}
             <Route path="*" element={<Home onLogout={handleLogout} />} />
