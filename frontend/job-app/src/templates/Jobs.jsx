@@ -1,0 +1,36 @@
+import { useState, useEffect } from "react";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+function Jobs() {
+  const [jobs, setJobs] = useState([]);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:5000/jobs")
+      .then(res => res.json())
+      .then(data => setJobs(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  return (
+    <div className="container my-4">
+      <h1 className="mb-4 text-center">Jobs Available</h1>
+      <div className="list-group">
+        {jobs.map((job) => (
+          <div key={job.id} className="list-group-item d-flex justify-content-between align-items-center mb-3 shadow-sm">
+            {/* Job Details */}
+            <div>
+              <h5>{job.title}</h5>
+              <p className="mb-1"><strong>Description:</strong> {job.description}</p>
+              <p className="mb-1"><strong>Location:</strong> {job.location}</p>
+              <p className="mb-0"><strong>Salary:</strong> {job.salary}</p>
+            </div>
+            {/* Apply Button */}
+            <button className="btn btn-primary">Apply</button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default Jobs;
