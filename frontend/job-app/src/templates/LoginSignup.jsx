@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import "../app.css";
 
 function LoginSignup({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true); // toggle between login/signup
@@ -27,43 +28,46 @@ function LoginSignup({ onLogin }) {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="card shadow p-4 mx-auto" style={{ maxWidth: "400px" }}>
-        <h2 className="text-center mb-4">{isLogin ? "Login" : "Sign Up"}</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Username</label>
-            <input
-              type="text"
-              className="form-control"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit" className="btn btn-primary w-100">
-            {isLogin ? "Login" : "Sign Up"}
-          </button>
-        </form>
-        <p className="mt-3 text-center">
-          {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
-          <button className="btn btn-link p-0" onClick={() => setIsLogin(!isLogin)}>
-            {isLogin ? "Sign Up" : "Login"}
-          </button>
-        </p>
-        {message && <div className="alert alert-info text-center mt-3">{message}</div>}
+    <div className="login-signup-container">
+  <div className="login-signup-card">
+    <h2>{isLogin ? "Login" : "Sign Up"}</h2>
+    <form onSubmit={handleSubmit}>
+      <div className="mb-3">
+        <label className="form-label">Username</label>
+        <input
+          type="text"
+          className="form-control"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
       </div>
-    </div>
+      <div className="mb-3">
+        <label className="form-label">Password</label>
+        <input
+          type="password"
+          className="form-control"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      <button type="submit" className="btn btn-primary w-100">
+        {isLogin ? "Login" : "Sign Up"}
+      </button>
+    </form>
+
+    <p className="mt-3 text-center">
+      {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+      <button className="btn btn-link p-0" onClick={() => setIsLogin(!isLogin)}>
+        {isLogin ? "Sign Up" : "Login"}
+      </button>
+    </p>
+
+    {message && <div className="alert alert-info mt-3">{message}</div>}
+  </div>
+</div>
+
   );
 }
 

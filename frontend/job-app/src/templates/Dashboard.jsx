@@ -7,14 +7,23 @@ function Dashboard({ onLogout }) {
   return (
     <>
       <Navbar onLogout={onLogout} />
-      <div className="container mt-4">
-        <div>
-          <h2 className="text-center mt-4">Welcome to your Dashboard</h2>
-          <p className="text-center">Manage your job applications and profile here.</p>
+      <div className="dashboard-container">
+        <div className="dashboard-header">
+          <h2>Welcome to your Dashboard</h2>
+          <p>Manage your job applications and profile here.</p>
         </div>
-        <YourJobs />
-        <CandidateList />
-        <MyApplications />
+
+        <div className="container">
+          <div className="dashboard-section">
+            <YourJobs />
+          </div>
+          <div className="dashboard-section">
+            <CandidateList />
+          </div>
+          <div className="dashboard-section">
+            <MyApplications />
+          </div>
+        </div>
       </div>
     </>
   );

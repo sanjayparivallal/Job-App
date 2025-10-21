@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function CandidateList() {
   const [applications, setApplications] = useState([]);
@@ -12,14 +13,12 @@ function CandidateList() {
       return;
     }
 
-    // Check if user has posted any jobs (use corrected route)
     fetch(`http://127.0.0.1:5000/showemployerjobs/${employer_id}`)
       .then(res => res.json())
       .then(data => {
         const has = Array.isArray(data) && data.length > 0;
         setHasJobs(has);
         if (has) {
-          // Fetch candidate applications only if employer has jobs
           fetch(`http://127.0.0.1:5000/applications/${employer_id}`)
             .then(res => res.json())
             .then(data => setApplications(data))
@@ -39,15 +38,15 @@ function CandidateList() {
         { action }
       );
 
-      if (action === 'accept') {
+      if (action === "accept") {
         if (response.data?.mailto) {
           window.location.href = response.data.mailto;
         } else {
-          alert('Mailto link not returned from server');
+          alert("Mailto link not returned from server");
         }
       } else {
         setApplications(applications.filter(app => app.application_id !== applicationId));
-        alert('Application rejected and removed');
+        alert("Application rejected and removed");
       }
     } catch (error) {
       alert("Error processing application");
@@ -58,37 +57,66 @@ function CandidateList() {
   if (!hasJobs) return null;
 
   return (
-    <div className="mb-5">
-      <h2>Candidate List</h2>
+    <div className="container mt-5 mb-5">
+      <h2 className="fw-bold text-center mb-4 border-bottom pb-2 text-primary">
+        Candidate List
+      </h2>
+
       <div className="list-group">
         {applications.length === 0 ? (
-          <p className="text-muted">No candidates have applied yet.</p>
+          <p className="text-muted text-center mt-4">No candidates have applied yet.</p>
         ) : (
-          applications.map((application) => (
-            <div key={application.application_id} className="list-group-item d-flex justify-content-between align-items-center mb-3 shadow-sm">
-              <div>
-                <h5 className="mb-1">{application.full_name}</h5>
-                <small className="text-muted">Applied for: {application.job_title}</small>
-                <p className="mb-0 mt-2 small">
+          applications.map(application => (
+            <div
+              key={application.application_id}
+              className="list-group-item mb-3 shadow-sm p-4 border-0 rounded-4 d-flex justify-content-between align-items-center flex-wrap"
+              style={{
+                backgroundColor: "#f8f9fa",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = "scale(1.01)";
+                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "scale(1)";
+                e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.05)";
+              }}
+            >
+              {/* Left: Candidate Details */}
+              <div className="flex-grow-1">
+                <h5 className="mb-1 text-dark">{application.full_name}</h5>
+                <small className="text-secondary d-block mb-2">
+                  Applied for: <strong>{application.job_title}</strong>
+                </small>
+                <p className="mb-1 small">
                   <strong>Email:</strong> {application.email} &nbsp; | &nbsp;
                   <strong>Phone:</strong> {application.phone}
                 </p>
-                <p className="mb-0 mt-2 small">
-                  <strong>Education:</strong> {application.education || 'N/A'} &nbsp; | &nbsp;
-                  <strong>Experience:</strong> {application.experience || 'N/A'}
+                <p className="mb-1 small">
+                  <strong>Education:</strong> {application.education || "N/A"} &nbsp; | &nbsp;
+                  <strong>Experience:</strong> {application.experience || "N/A"}
                 </p>
-                <p className="mb-0 mt-1 small"><strong>Skills:</strong> {application.skills || 'N/A'}</p>
+                <p className="mb-0 small">
+                  <strong>Skills:</strong> {application.skills || "N/A"}
+                </p>
               </div>
-              <div className="d-flex gap-2">
+
+              {/* Right: Buttons - aligned horizontally and centered vertically */}
+              <div className="d-flex align-items-center gap-3 mt-3 mt-md-0">
                 <button
-                  className="btn btn-success"
-                  onClick={() => handleApplicationProcess(application.application_id, 'accept')}
+                  className="btn btn-success btn-sm px-3 rounded-pill shadow-sm"
+                  onClick={() =>
+                    handleApplicationProcess(application.application_id, "accept")
+                  }
                 >
                   Accept
                 </button>
                 <button
-                  className="btn btn-danger"
-                  onClick={() => handleApplicationProcess(application.application_id, 'reject')}
+                  className="btn btn-danger btn-sm px-3 rounded-pill shadow-sm"
+                  onClick={() =>
+                    handleApplicationProcess(application.application_id, "reject")
+                  }
                 >
                   Reject
                 </button>

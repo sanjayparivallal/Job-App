@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import Navbar from "./Navbar";
+import "../app.css"; // Make sure your app.css includes the JobForm styles below
 
 function JobForm({ onLogout }) {
   const [title, setTitle] = useState("");
@@ -38,9 +39,9 @@ function JobForm({ onLogout }) {
   return (
     <>
       <Navbar onLogout={onLogout} />
-      <div className="container mt-5">
-        <div className="card shadow p-4 mx-auto" style={{ maxWidth: "500px" }}>
-          <h2 className="text-center mb-4">Post a Job</h2>
+      <div className="job-form-container">
+        <div className="job-form-card">
+          <h2>Post a Job</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label">Job Title</label>
@@ -87,7 +88,7 @@ function JobForm({ onLogout }) {
           </form>
 
           {message && (
-            <div className="alert alert-info text-center mt-3">{message}</div>
+            <div className="alert alert-info mt-3">{message}</div>
           )}
         </div>
       </div>
