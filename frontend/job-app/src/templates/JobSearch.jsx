@@ -25,10 +25,7 @@ function JobSearch() {
   const filteredJobs = jobs.filter(job => {
     const q = search.toLowerCase();
     return (
-      job.title.toLowerCase().includes(q) ||
-      job.description.toLowerCase().includes(q) ||
-      job.location.toLowerCase().includes(q) ||
-      String(job.salary).toLowerCase().includes(q)
+      job.title.toLowerCase().includes(q)
     );
   });
 

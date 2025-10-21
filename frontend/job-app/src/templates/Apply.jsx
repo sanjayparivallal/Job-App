@@ -1,5 +1,5 @@
 import Navbar from "./Navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -7,12 +7,23 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 function Apply() {
   const navigate = useNavigate();
   const { jobId } = useParams();
+  const [jobTitle, setJobTitle] = useState("");  // 🆕 job title state
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [education, setEducation] = useState("");
   const [experience, setExperience] = useState("");
   const [skills, setSkills] = useState("");
+
+  // 🆕 Fetch job title using jobId
+  useEffect(() => {
+    axios.get(`http://127.0.0.1:5000/jobs`)
+      .then(res => {
+        const job = res.data.find(j => String(j.id) === String(jobId));
+        if (job) setJobTitle(job.title);
+      })
+      .catch(err => console.error("Error fetching job title:", err));
+  }, [jobId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,12 +52,18 @@ function Apply() {
       alert(error.response?.data?.error || "Failed to submit application");
     }
   }
+
   return (
     <>
       <Navbar />
       <div className="container mt-4">
         <div className="card shadow-sm p-4 mx-auto" style={{ maxWidth: "700px" }}>
-          <h2 className="text-center mb-4">Job Application Form</h2>
+          {/* 🆕 Job Title Display */}
+          <h2 className="text-center mb-2 text-primary">
+            {jobTitle || "Loading..."}
+          </h2>
+
+          <h4 className="text-center mb-4">Job Application Form</h4>
           <form onSubmit={handleSubmit} className="needs-validation">
             <div className="row g-3">
               <div className="col-12">
@@ -151,4 +168,5 @@ function Apply() {
     </>
   );
 }
-export default Apply; 
+
+export default Apply;
