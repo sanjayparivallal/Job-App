@@ -7,17 +7,29 @@ function CandidateList() {
 
   useEffect(() => {
     const employer_id = localStorage.getItem("user_id");
-    // Check if user has posted any jobs
-    fetch(`http://127.0.0.1:5000/showemployerjobs${employer_id}`)
-      .then(res => res.json())
-      .then(data => setHasJobs(data.length > 0))
-      .catch(err => setHasJobs(false));
+    if (!employer_id) {
+      setHasJobs(false);
+      return;
+    }
 
-    // Fetch candidate applications
-    fetch(`http://127.0.0.1:5000/applications/${employer_id}`)
+    // Check if user has posted any jobs (use corrected route)
+    fetch(`http://127.0.0.1:5000/showemployerjobs/${employer_id}`)
       .then(res => res.json())
-      .then(data => setApplications(data))
-      .catch(err => console.error(err));
+      .then(data => {
+        const has = Array.isArray(data) && data.length > 0;
+        setHasJobs(has);
+        if (has) {
+          // Fetch candidate applications only if employer has jobs
+          fetch(`http://127.0.0.1:5000/applications/${employer_id}`)
+            .then(res => res.json())
+            .then(data => setApplications(data))
+            .catch(err => console.error(err));
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        setHasJobs(false);
+      });
   }, []);
 
   const handleApplicationProcess = async (applicationId, action) => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 function YourJobs() {
   const [jobs, setJobs] = useState([]);
@@ -33,7 +34,17 @@ function YourJobs() {
               <strong>Salary:</strong> {job.salary}
             </p>
           </div>
-          <button className="btn btn-primary">Delete</button>
+          <button className="btn btn-danger" onClick={async () => {
+            if (!confirm('Delete this job and its applications?')) return;
+            try {
+              const res = await axios.delete(`http://127.0.0.1:5000/jobs/${job.id}`);
+              // remove from state
+              setJobs(prev => prev.filter(j => j.id !== job.id));
+            } catch (err) {
+              console.error(err);
+              alert('Failed to delete job');
+            }
+          }}>Delete</button>
         </div>
       ))}
     </div>

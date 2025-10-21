@@ -11,9 +11,9 @@ function Jobs() {
     fetch("http://127.0.0.1:5000/jobs")
       .then(res => res.json())
       .then(data => {
-        // Filter out jobs where the job's id matches the current user's id
+        // Filter out jobs where the employer_id matches the current user's id
         const availableJobs = currentUserId 
-          ? data.filter(job => String(job.id) !== currentUserId)
+          ? data.filter(job => String(job.employer_id) !== currentUserId)
           : data;
         setJobs(availableJobs);
       })
