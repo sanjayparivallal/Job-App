@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function YourJobs() {
@@ -7,17 +7,17 @@ function YourJobs() {
   useEffect(() => {
     const employer_id = localStorage.getItem("user_id");
     fetch(`http://127.0.0.1:5000/showemployerjobs/${employer_id}`)
-      .then((res) => res.json())
-      .then((data) => setJobs(data))
-      .catch((err) => console.error(err));
+      .then(res => res.json())
+      .then(data => setJobs(data))
+      .catch(err => console.error(err));
   }, []);
 
-  if (jobs.length === 0) return null;
+  if (!jobs || jobs.length === 0) return null; // <-- do not render if no jobs
 
   return (
     <div className="your-jobs-container">
       <h2>Your Jobs</h2>
-      {jobs.map((job) => (
+      {jobs.map(job => (
         <div key={job.id} className="your-jobs-card d-flex justify-content-between align-items-center">
           <div className="job-details">
             <h5>{job.title}</h5>
@@ -31,7 +31,7 @@ function YourJobs() {
               if (!confirm("Delete this job and its applications?")) return;
               try {
                 await axios.delete(`http://127.0.0.1:5000/jobs/${job.id}`);
-                setJobs((prev) => prev.filter((j) => j.id !== job.id));
+                setJobs(prev => prev.filter(j => j.id !== job.id));
               } catch (err) {
                 console.error(err);
                 alert("Failed to delete job");

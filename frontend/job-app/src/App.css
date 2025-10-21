@@ -581,3 +581,63 @@
 
 
 /* end of yourjob.css*/
+
+/* Candidate List Section */
+.candidate-list-container {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.candidate-card {
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.candidate-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.candidate-card h5 {
+  font-size: 1.1rem;
+  color: #212529;
+}
+
+.candidate-card small,
+.candidate-card p {
+  color: #495057;
+}
+
+/* Buttons spacing */
+.candidate-card .btn {
+  min-width: 70px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .candidate-list-container {
+    padding: 1.25rem;
+  }
+
+  .candidate-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .candidate-card .d-flex.align-items-center {
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+/* Job title in candidate list */
+.candidate-card .job-title {
+  color: #0d6efd; /* Bootstrap primary blue */
+}
+
