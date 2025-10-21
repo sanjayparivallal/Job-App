@@ -5,7 +5,7 @@ function YourJobs() {
 
   useEffect(() => {
     const employer_id = localStorage.getItem("user_id");
-    fetch(`http://127.0.0.1:5000/showemployerjobs${employer_id}`)
+    fetch(`http://127.0.0.1:5000/showemployerjobs/${employer_id}`)
       .then((res) => res.json())
       .then((data) => setJobs(data))
       .catch((err) => console.error(err));
