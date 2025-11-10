@@ -169,7 +169,7 @@
   align-items: center;
   min-height: 80vh;
   padding: 20px;
-  background: #f8f9fa; /* light gray */
+  background: linear-gradient(180deg, #f9fafb, #eef5f1);
 }
 
 /* Card styling */
@@ -249,7 +249,7 @@
 .job-search-container {
   min-height: 80vh;
   padding: 40px 20px;
-  background: #f8f9fa;
+  background: linear-gradient(180deg, #f9fafb, #eef5f1);
 }
 
 .job-search-container h2 {
@@ -339,7 +339,7 @@
   align-items: center;
   min-height: 80vh;
   padding: 20px;
-  background: #f8f9fa;
+  background: linear-gradient(180deg, #f9fafb, #eef5f1);
 }
 
 .login-signup-card {
@@ -640,4 +640,19 @@
 .candidate-card .job-title {
   color: #0d6efd; /* Bootstrap primary blue */
 }
+
+/* Unified Dashboard Theme Additions */
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.stat-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.08); transform: translateY(-3px); }
+.stat-number { font-size: 2rem; font-weight: 600; color:#0d6efd; }
+.stat-label { color:#6c757d; letter-spacing:.5px; text-transform: uppercase; font-size:.7rem; }
+
+.dashboard-section { border:1px solid #e2e8f0; }
+
+/* End Unified Dashboard Theme */
 

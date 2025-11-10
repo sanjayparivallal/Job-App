@@ -23,6 +23,7 @@ function Navbar({ onLogout }) {
       <div className="d-flex align-items-center">
         <Link to="/" className="btn btn-link">Home</Link>
         <Link to="/dashboard" className="btn btn-link">Dashboard</Link>
+  {/* Profile link removed since Dashboard includes profile features */}
         {username && <span className="mx-3 text-primary">Welcome, {username}!</span>}
       </div>
       <button className="btn btn-outline-danger" onClick={onLogout}>

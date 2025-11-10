@@ -44,6 +44,8 @@ function App() {
             {/* Apply Page */}
             <Route path="/apply/:jobId" element={<Apply />} />
 
+            {/* Profile Page removed: dashboard now includes profile features */}
+
             {/* Fallback for unknown paths */}
             <Route path="*" element={<Home onLogout={handleLogout} />} />
           </>
