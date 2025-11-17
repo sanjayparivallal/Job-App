@@ -7,7 +7,7 @@ function Home({ onLogout }) {
   return (
     <>
       <Navbar onLogout={onLogout} />
-      <div className="dashboard-container">
+      <div className="home-page-container">
         <Createjob />
         <JobSearch />
       </div>

@@ -130,19 +130,16 @@ function Dashboard({ onLogout }) {
           <div className="row g-3 mb-4">
             <div className={hasJobs ? "col-lg-3" : "col-lg-4"}>
               <div className="card stat-card shadow-sm h-100 border-0">
-                <div className="card-body">
-                  <div className="d-flex align-items-center gap-3">
+                <div className="card-body text-center">
+                  <div className="d-flex align-items-center justify-content-center mb-2">
                     <div
                       className="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center"
                       style={{ width: 56, height: 56 }}
                     >
                       <span className="fw-bold">{initials}</span>
                     </div>
-                    <div>
-                      <h5 className="card-title mb-1">{profile.user.username}</h5>
-                      <small className="text-muted">User ID: {profile.user.user_id}</small>
-                    </div>
                   </div>
+                  <h5 className="card-title mb-0 stat-label">{profile.user.username}</h5>
                 </div>
               </div>
             </div>

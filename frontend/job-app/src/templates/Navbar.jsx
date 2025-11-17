@@ -4,6 +4,7 @@ import "../app.css";
 
 function Navbar({ onLogout }) {
   const [username, setUsername] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -17,19 +18,40 @@ function Navbar({ onLogout }) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
   return (
-    <div className="navbar-custom">
-      <h3>Job Portal</h3>
-      <div className="d-flex align-items-center">
-        <Link to="/" className="btn btn-link">Home</Link>
-        <Link to="/dashboard" className="btn btn-link">Dashboard</Link>
-  {/* Profile link removed since Dashboard includes profile features */}
-        {username && <span className="mx-3 text-primary">Welcome, {username}!</span>}
-      </div>
-      <button className="btn btn-outline-danger" onClick={onLogout}>
-        Logout
-      </button>
-    </div>
+    <>
+      {/* Backdrop overlay for mobile menu */}
+      {isMenuOpen && (
+        <div 
+          className="navbar-backdrop" 
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+      
+      <nav className="navbar-custom">
+        <h3 className="navbar-logo">Job Portal</h3>
+        
+        {/* Hamburger menu for mobile */}
+        <button className="navbar-hamburger" onClick={toggleMenu} aria-label="Toggle navigation">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
+          <div className="navbar-links">
+            <Link to="/" className="btn btn-link" onClick={() => setIsMenuOpen(false)}>Home</Link>
+            <Link to="/dashboard" className="btn btn-link" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+          </div>
+          {username && <span className="navbar-welcome">Welcome, {username}!</span>}
+          <button className="btn btn-outline-danger navbar-logout" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </>
   );
 }
 
