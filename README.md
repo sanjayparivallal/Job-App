@@ -39,31 +39,42 @@ A full‑stack job portal where applicants can search and apply for jobs with a 
 ```
 Job app/
 ├── backend/
-│   ├── app.py                  # Flask API (endpoints, file handling)
+│   ├── app.py                  # Flask API (routes, resume serving, CSV export)
 │   └── requirements.txt        # Python dependencies
 │
 ├── frontend/
 │   └── job-app/
 │       ├── src/
-│       │   ├── App.jsx
-│       │   ├── App.css
-│       │   ├── main.jsx
+│       │   ├── App.jsx         # App routes and top-level layout
+│       │   ├── App.css         # Global styles and components styling
+│       │   ├── index.css       # Base styles and resets
+│       │   ├── main.jsx        # React/Vite entry point
+│       │   ├── assets/
+│       │   │   └── react.svg   # Static assets
+│       │   ├── components/
+│       │   │   └── SkeletonLoader.jsx  # Shimmer loader for async content
+│       │   ├── hooks/
+│       │   │   ├── useFetch.js        # Data fetching with loading/error states
+│       │   │   ├── useDebounce.js     # Debounce helper for inputs/search
+│       │   │   └── useLocalStorage.js # Persist state in localStorage
 │       │   ├── utils/
-│       │   │   └── api.js     # Centralized API layer
+│       │   │   ├── api.js      # Centralized API layer (fetch wrapper + endpoints)
+│       │   │   └── constants.js # Shared constants and messages
 │       │   └── templates/
-│       │       ├── Apply.jsx
-│       │       ├── CandidateList.jsx
-│       │       ├── Createjob.jsx
-│       │       ├── Dashboard.jsx
-│       │       ├── JobForm.jsx
-│       │       ├── JobSearch.jsx
-│       │       ├── LoginSignup.jsx
-│       │       ├── MyApplications.jsx
-│       │       ├── Navbar.jsx
-│       │       └── YourJobs.jsx
-│       ├── index.html
-│       ├── package.json
-│       └── vite.config.js
+│       │       ├── Apply.jsx           # Job application form with PDF resume upload
+│       │       ├── CandidateList.jsx   # Employer dashboard: inline resume view, email accept/reject, CSV export
+│       │       ├── Createjob.jsx       # Entry/CTA page to create a new job
+│       │       ├── Dashboard.jsx       # Overview and quick links (user/employer)
+│       │       ├── Home.jsx            # Landing page
+│       │       ├── JobForm.jsx         # Employer job posting form (title, location, salary, description)
+│       │       ├── JobSearch.jsx       # Job search and listings (filter/sort)
+│       │       ├── LoginSignup.jsx     # Authentication (login/sign up) screens
+│       │       ├── MyApplications.jsx  # View and withdraw submitted applications
+│       │       ├── Navbar.jsx          # Top navigation and auth controls
+│       │       └── YourJobs.jsx        # Manage jobs posted by the employer
+│       ├── index.html           # HTML shell for the SPA
+│       ├── package.json         # Frontend dependencies and scripts
+│       └── vite.config.js       # Vite configuration
 └── README.md
 ```
 
