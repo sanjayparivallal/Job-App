@@ -1,5 +1,6 @@
 import { useState } from "react";
-import axios from "axios";
+import toast from "react-hot-toast";
+import { createJob } from "../utils/api";
 import Navbar from "./Navbar";
 import "../app.css"; // Make sure your app.css includes the JobForm styles below
 
@@ -8,31 +9,34 @@ function JobForm({ onLogout }) {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [salary, setSalary] = useState("");
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const employer_id = localStorage.getItem("user_id");
     if (!employer_id) {
-      setMessage("You must be logged in to post a job.");
+      toast.error("You must be logged in to post a job.");
       return;
     }
 
+    setLoading(true);
     try {
-      const res = await axios.post("http://127.0.0.1:5000/addjob", {
+      await createJob({
         title,
         description,
         location,
         salary,
         employer_id,
       });
-      setMessage(res.data.message || "Job posted successfully!");
+      toast.success("Job posted successfully! 🎉");
       setTitle("");
       setDescription("");
       setLocation("");
       setSalary("");
     } catch (err) {
-      setMessage(err.response?.data?.error || "Something went wrong!");
+      toast.error(err.message || "Failed to post job");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,7 +63,10 @@ function JobForm({ onLogout }) {
                 className="form-control"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                placeholder="Write a detailed job description..."
+                rows="8"
                 required
+                style={{ resize: "vertical" }}
               />
             </div>
             <div className="mb-3">
@@ -82,14 +89,17 @@ function JobForm({ onLogout }) {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-success w-100">
-              Post Job
+            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                  Posting...
+                </>
+              ) : (
+                "Post Job"
+              )}
             </button>
           </form>
-
-          {message && (
-            <div className="alert alert-info mt-3">{message}</div>
-          )}
         </div>
       </div>
     </>

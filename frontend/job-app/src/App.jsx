@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import LoginSignup from "./templates/LoginSignup";
 import Home from "./templates/Home";
 import Dashboard from "./templates/Dashboard";
@@ -26,6 +27,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster position="top-right" reverseOrder={false} />
       <Routes>
         {/* If user not logged in, show Login/Signup page for all routes */}
         {!isAuthenticated ? (
@@ -42,7 +44,7 @@ function App() {
             <Route path="/create-job" element={<JobForm onLogout={handleLogout} />} />
 
             {/* Apply Page */}
-            <Route path="/apply/:jobId" element={<Apply />} />
+            <Route path="/apply/:jobId" element={<Apply onLogout={handleLogout} />} />
 
             {/* Profile Page removed: dashboard now includes profile features */}
 

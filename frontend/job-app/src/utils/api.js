@@ -85,6 +85,62 @@ export const updateApplicationStatus = async (applicationId, status) => {
   });
 };
 
+export const withdrawApplication = async (applicationId) => {
+  return apiRequest(`/applications/${applicationId}`, {
+    method: 'DELETE',
+  });
+};
+
+export const submitApplicationWithResume = async (formData) => {
+  const url = `${API_BASE_URL}/apply`;
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData, // Don't set Content-Type for FormData
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.error || 
+        errorData.message || 
+        `HTTP ${response.status}: ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error (apply with resume):', error);
+    throw error;
+  }
+};
+
+export const exportCandidatesToCSV = async (employerId) => {
+  const url = `${API_BASE_URL}/export-candidates/${employerId}`;
+  
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `candidates_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error('Export CSV Error:', error);
+    throw error;
+  }
+};
+
 // Auth APIs
 export const loginUser = async (credentials) => {
   return apiRequest('/login', {
@@ -110,7 +166,10 @@ export default {
   fetchApplicationsByEmployer,
   fetchApplicationsByApplicant,
   submitApplication,
+  submitApplicationWithResume,
   updateApplicationStatus,
+  withdrawApplication,
+  exportCandidatesToCSV,
   loginUser,
   signupUser,
 };

@@ -1,16 +1,35 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { fetchApplicationsByApplicant, withdrawApplication } from "../utils/api";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function MyApplications() {
   const [myApplications, setMyApplications] = useState([]);
+  const [withdrawing, setWithdrawing] = useState(null);
 
   useEffect(() => {
     const applicant_id = localStorage.getItem("user_id");
-    fetch(`http://127.0.0.1:5000/myapplications/${applicant_id}`)
-      .then((res) => res.json())
+    fetchApplicationsByApplicant(applicant_id)
       .then((data) => setMyApplications(data))
       .catch((err) => console.error(err));
   }, []);
+
+  const handleWithdraw = async (applicationId) => {
+    if (!window.confirm("Are you sure you want to withdraw this application?")) {
+      return;
+    }
+
+    setWithdrawing(applicationId);
+    try {
+      await withdrawApplication(applicationId);
+      setMyApplications(prev => prev.filter(app => app.application_id !== applicationId));
+      toast.success("Application withdrawn successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to withdraw application");
+    } finally {
+      setWithdrawing(null);
+    }
+  };
 
   return (
     <div className="container my-4">
@@ -37,6 +56,22 @@ function MyApplications() {
                     <strong>Email:</strong> {app.email} &nbsp; | &nbsp;
                     <strong>Phone:</strong> {app.phone}
                   </p>
+                  <div className="mt-3">
+                    <button 
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleWithdraw(app.application_id)}
+                      disabled={withdrawing === app.application_id}
+                    >
+                      {withdrawing === app.application_id ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-1"></span>
+                          Withdrawing...
+                        </>
+                      ) : (
+                        "Withdraw Application"
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

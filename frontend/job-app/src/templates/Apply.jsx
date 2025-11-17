@@ -1,10 +1,11 @@
 import Navbar from "./Navbar";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import toast from "react-hot-toast";
+import { fetchAllJobs, submitApplicationWithResume } from "../utils/api";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-function Apply() {
+function Apply({ onLogout }) {
   const navigate = useNavigate();
   const { jobId } = useParams();
   const [jobTitle, setJobTitle] = useState("");  // 🆕 job title state
@@ -14,48 +15,75 @@ function Apply() {
   const [education, setEducation] = useState("");
   const [experience, setExperience] = useState("");
   const [skills, setSkills] = useState("");
+  const [resume, setResume] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // 🆕 Fetch job title using jobId
   useEffect(() => {
-    axios.get(`http://127.0.0.1:5000/jobs`)
-      .then(res => {
-        const job = res.data.find(j => String(j.id) === String(jobId));
+    fetchAllJobs()
+      .then(data => {
+        const job = data.find(j => String(j.id) === String(jobId));
         if (job) setJobTitle(job.title);
       })
       .catch(err => console.error("Error fetching job title:", err));
   }, [jobId]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (file.type !== "application/pdf") {
+        toast.error("Only PDF files are allowed");
+        e.target.value = null;
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be less than 5MB");
+        e.target.value = null;
+        return;
+      }
+      setResume(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const applicant_id = localStorage.getItem("user_id");
     
     if (!applicant_id) {
-      alert("You must be logged in to apply!");
+      toast.error("You must be logged in to apply!");
       return;
     }
 
+    setLoading(true);
     try {
-      const response = await axios.post("http://127.0.0.1:5000/apply", {
-        job_id: jobId,
-        applicant_id,
-        full_name: fullName,
-        email,
-        phone,
-        education,
-        experience,
-        skills
-      });
+      const formData = new FormData();
+      formData.append("job_id", jobId);
+      formData.append("applicant_id", applicant_id);
+      formData.append("full_name", fullName);
+      formData.append("email", email);
+      formData.append("phone", phone);
+      formData.append("education", education);
+      formData.append("experience", experience);
+      formData.append("skills", skills);
+      if (resume) {
+        formData.append("resume", resume);
+      }
 
-      alert(response.data.message);
+      await submitApplicationWithResume(formData);
+      toast.success("Application submitted successfully! 🎉");
       navigate('/'); // Redirect to home page after successful application
     } catch (error) {
-      alert(error.response?.data?.error || "Failed to submit application");
+      toast.error(error.message || "Failed to submit application");
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
     <>
-      <Navbar />
+      <Navbar onLogout={onLogout} />
       <div className="container mt-4">
         <div className="card shadow-sm p-4 mx-auto" style={{ maxWidth: "700px" }}>
           {/* 🆕 Job Title Display */}
@@ -155,11 +183,38 @@ function Apply() {
                   <label htmlFor="skills">Skills</label>
                 </div>
               </div>
+
+              <div className="col-12">
+                <div className="mb-4">
+                  <label htmlFor="resume" className="form-label">
+                    Upload Resume <span className="text-muted">(PDF, max 5MB)</span>
+                  </label>
+                  <input
+                    type="file"
+                    className="form-control"
+                    id="resume"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                  />
+                  {resume && (
+                    <div className="mt-2 text-success">
+                      ✓ {resume.name} ({(resume.size / 1024).toFixed(2)} KB)
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="d-grid gap-2">
-              <button type="submit" className="btn btn-primary btn-lg">
-                Submit Application
+              <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Application"
+                )}
               </button>
             </div>
           </form>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { fetchEmployerJobs, fetchApplicationsByEmployer, updateApplicationStatus } from "../utils/api";
+import toast from "react-hot-toast";
+import { fetchEmployerJobs, fetchApplicationsByEmployer, updateApplicationStatus, exportCandidatesToCSV } from "../utils/api";
 import { getCurrentUserId } from "../hooks/useLocalStorage";
 import { ERROR_MESSAGES, APPLICATION_STATUS } from "../utils/constants";
 import { SkeletonCard } from "../components/SkeletonLoader";
@@ -10,37 +11,46 @@ function CandidateList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [processingId, setProcessingId] = useState(null);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportCSV = async () => {
+    const employerId = getCurrentUserId();
+    if (!employerId) {
+      toast.error("Please log in to export data");
+      return;
+    }
+
+    setExporting(true);
+    try {
+      await exportCandidatesToCSV(employerId);
+      toast.success("Candidates exported successfully! 📊");
+    } catch (error) {
+      toast.error(error.message || "Failed to export candidates");
+      console.error("Export error:", error);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Open system email client immediately (user gesture) with predefined content
   const openEmailForApplication = (app) => {
-    try {
-      const email = app.email || "";
-      const jobTitle = app.job_title || "your job";
-      const fullName = app.full_name || "Candidate";
-      const subject = `Interview Invitation for ${jobTitle}`;
-      const body =
-        `Dear ${fullName},\n\n` +
-        `Congratulations! You have been shortlisted for the position '${jobTitle}'.\n` +
-        `Please reply to this email to schedule your interview.\n\n` +
-        `Best regards,\nYour Hiring Team`;
+    const email = app.email || "";
+    const jobTitle = app.job_title || "your job";
+    const fullName = app.full_name || "Candidate";
+    const subject = `Interview Invitation for ${jobTitle}`;
+    const body =
+      `Dear ${fullName},\n\n` +
+      `Congratulations! You have been shortlisted for the position '${jobTitle}'.\n` +
+      `Please reply to this email to schedule your interview.\n\n` +
+      `Best regards,\nYour Hiring Team`;
 
-      const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const mailto = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-      // Prefer direct navigation to keep it as a trusted user gesture
-      window.location.href = mailto;
-    } catch (e) {
-      // Fallback: hidden anchor
-      try {
-        const link = document.createElement("a");
-        link.href = mailto;
-        link.style.display = "none";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (_) {
-        console.error("Failed to trigger mailto link");
-      }
-    }
+    // Create a temporary link and click it
+    const link = document.createElement("a");
+    link.href = mailto;
+    link.target = "_blank";
+    link.click();
   };
 
   // Accept flow: open email first, then notify backend and update UI
@@ -54,16 +64,21 @@ function CandidateList() {
       
       // Optimistic UI update - remove from list
       setApplications((prev) => prev.filter((a) => a.application_id !== application.application_id));
+      // No toast notification - email client opening is the feedback
     } catch (error) {
       console.error("Error processing acceptance:", error);
-      // Keep UI as-is but inform user
-      alert("Email compose attempted. To finalize in app, please try again.");
+      toast.error(error.message || "Failed to update application status");
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleReject = async (applicationId) => {
+    // Confirm before rejecting (permanent deletion)
+    if (!window.confirm("Are you sure you want to reject this candidate? This will permanently remove their application.")) {
+      return;
+    }
+    
     setProcessingId(applicationId);
     try {
       await updateApplicationStatus(applicationId, APPLICATION_STATUS.REJECTED);
@@ -72,9 +87,10 @@ function CandidateList() {
       setApplications((prevApps) =>
         prevApps.filter((app) => app.application_id !== applicationId)
       );
+      toast.success("Candidate rejected and removed");
     } catch (error) {
       console.error("Error rejecting application:", error);
-      alert(error.message || "Error processing application.");
+      toast.error(error.message || "Failed to reject candidate");
     } finally {
       setProcessingId(null);
     }
@@ -127,9 +143,29 @@ function CandidateList() {
 
   return (
     <div className="candidate-list-container dashboard-section">
-      <h2 className="fw-bold text-center mb-4 border-bottom pb-2 text-primary dashboard-header">
-        Candidate List
-      </h2>
+      <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h2 className="fw-bold text-primary dashboard-header mb-0">
+          Candidate List
+        </h2>
+        {applications.length > 0 && (
+          <button 
+            className="btn btn-success"
+            onClick={handleExportCSV}
+            disabled={exporting}
+          >
+            {exporting ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2"></span>
+                Exporting...
+              </>
+            ) : (
+              <>
+                📊 Export to CSV
+              </>
+            )}
+          </button>
+        )}
+      </div>
 
       {applications.length === 0 ? (
         <p className="text-muted text-center mt-4">
@@ -163,20 +199,32 @@ function CandidateList() {
               <p className="mb-0 small">
                 <strong>Skills:</strong> {application.skills || "N/A"}
               </p>
+              {application.resume_path && (
+                <p className="mb-0 small mt-2">
+                  <a
+                    href={`http://127.0.0.1:5000/resumes/${application.application_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-decoration-none"
+                  >
+                    📄 View Resume
+                  </a>
+                </p>
+              )}
             </div>
 
             <div className="d-flex align-items-center gap-2 gap-md-3">
               <button
                 className="btn btn-success btn-sm"
                 onClick={() => handleAccept(application)}
+                disabled={processingId === application.application_id}
               >
                 Accept
               </button>
               <button
                 className="btn btn-danger btn-sm"
-                onClick={() =>
-                  handleApplicationProcess(application.application_id, "reject")
-                }
+                onClick={() => handleReject(application.application_id)}
+                disabled={processingId === application.application_id}
               >
                 Reject
               </button>
