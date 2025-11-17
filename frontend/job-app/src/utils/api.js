@@ -50,7 +50,7 @@ export const fetchEmployerJobs = async (employerId) => {
 };
 
 export const createJob = async (jobData) => {
-  return apiRequest('/jobs', {
+  return apiRequest('/addjob', {
     method: 'POST',
     body: JSON.stringify(jobData),
   });
