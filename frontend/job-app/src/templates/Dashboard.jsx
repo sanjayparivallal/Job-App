@@ -3,6 +3,10 @@ import CandidateList from "./CandidateList";
 import MyApplications from "./MyApplications";
 import Navbar from "./Navbar";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { fetchUserProfile, fetchEmployerJobs, fetchApplicationsByEmployer } from "../utils/api";
+import { getCurrentUserId } from "../hooks/useLocalStorage";
+import { ERROR_MESSAGES } from "../utils/constants";
+import { SkeletonStatCard } from "../components/SkeletonLoader";
 
 function Dashboard({ onLogout }) {
   const [hasJobs, setHasJobs] = useState(false);
@@ -14,41 +18,46 @@ function Dashboard({ onLogout }) {
 
   // Fetch minimal info to decide if employer has jobs
   useEffect(() => {
-    const employer_id = localStorage.getItem("user_id");
-    fetch(`http://127.0.0.1:5000/showemployerjobs/${employer_id}`)
-      .then((res) => res.json())
-      .then((data) => setHasJobs(Array.isArray(data) && data.length > 0))
-      .catch(() => setHasJobs(false));
+    const loadEmployerJobs = async () => {
+      try {
+        const employer_id = getCurrentUserId();
+        if (!employer_id) return;
+        
+        const data = await fetchEmployerJobs(employer_id);
+        setHasJobs(Array.isArray(data) && data.length > 0);
+      } catch (err) {
+        setHasJobs(false);
+        console.error("Error loading employer jobs:", err);
+      }
+    };
+
+    loadEmployerJobs();
   }, [refreshKey]);
 
   // Fetch profile summary for hero + stats
-  const fetchProfile = useCallback(() => {
-    const userId = localStorage.getItem("user_id");
+  const fetchProfile = useCallback(async () => {
+    const userId = getCurrentUserId();
     if (!userId) {
-      setError("You must be logged in to view your dashboard.");
+      setError(ERROR_MESSAGES.LOGIN_REQUIRED);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError("");
-    fetch(`http://127.0.0.1:5000/profile/${userId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load dashboard data");
-        return res.json();
-      })
-      .then((data) => {
-        setProfile(data);
-        // Also update hasJobs based on profile counts for immediate UX
-        if (data?.counts) {
-          setHasJobs((data.counts.jobs_posted || 0) > 0);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "Failed to load dashboard data");
-        setLoading(false);
-      });
+    try {
+      setLoading(true);
+      setError("");
+      const data = await fetchUserProfile(userId);
+      setProfile(data);
+      
+      // Also update hasJobs based on profile counts for immediate UX
+      if (data?.counts) {
+        setHasJobs((data.counts.jobs_posted || 0) > 0);
+      }
+    } catch (err) {
+      setError(err.message || ERROR_MESSAGES.LOAD_FAILED);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -57,16 +66,25 @@ function Dashboard({ onLogout }) {
 
   // Fetch number of candidates (applications received) only if user has posted jobs
   useEffect(() => {
-    if (!hasJobs) {
-      setCandidateCount(0);
-      return;
-    }
-    const employerId = localStorage.getItem("user_id");
-    if (!employerId) return;
-    fetch(`http://127.0.0.1:5000/applications/${employerId}`)
-      .then((res) => res.json())
-      .then((apps) => setCandidateCount(Array.isArray(apps) ? apps.length : 0))
-      .catch(() => setCandidateCount(0));
+    const loadCandidates = async () => {
+      if (!hasJobs) {
+        setCandidateCount(0);
+        return;
+      }
+      
+      try {
+        const employerId = getCurrentUserId();
+        if (!employerId) return;
+        
+        const apps = await fetchApplicationsByEmployer(employerId);
+        setCandidateCount(Array.isArray(apps) ? apps.length : 0);
+      } catch (err) {
+        setCandidateCount(0);
+        console.error("Error loading candidates:", err);
+      }
+    };
+
+    loadCandidates();
   }, [hasJobs, refreshKey]);
 
   const initials = useMemo(() => {
@@ -80,11 +98,14 @@ function Dashboard({ onLogout }) {
 
   return (
     <>
+      <a href="#main-content" className="skip-to-main">
+        Skip to main content
+      </a>
       <Navbar onLogout={onLogout} />
-      <div className="dashboard-container">
+      <main id="main-content" className="dashboard-container">
         <div className="container mt-4">
         {/* Hero Header */}
-        <div
+        <header
           className="card border-0 shadow-sm mb-4"
           style={{
             background:
@@ -96,38 +117,75 @@ function Dashboard({ onLogout }) {
               <div
                 className="rounded-circle d-flex align-items-center justify-content-center"
                 style={{ width: 64, height: 64, background: "rgba(255,255,255,0.2)" }}
+                aria-hidden="true"
               >
                 <span className="fw-bold" style={{ fontSize: 20 }}>{initials}</span>
               </div>
               <div>
-                <h2 className="h4 mb-1">Dashboard</h2>
-                <div className="small opacity-75">Manage your jobs and applications in one place</div>
+                <h1 className="h4 mb-1">Dashboard</h1>
+                <p className="small opacity-75 mb-0">Manage your jobs and applications in one place</p>
               </div>
             </div>
-            <div className="d-flex gap-2">
+            <nav className="d-flex gap-2" aria-label="Dashboard actions">
               <button
                 className="btn btn-outline-light btn-sm"
                 onClick={() => setRefreshKey((k) => k + 1)}
                 disabled={loading}
+                aria-label={loading ? "Refreshing dashboard data" : "Refresh dashboard data"}
               >
-                {loading ? "Refreshing..." : "Refresh"}
+                {loading ? (
+                  <>
+                    <span className="spinner" aria-hidden="true"></span>
+                    <span className="ms-2">Refreshing...</span>
+                  </>
+                ) : (
+                  "Refresh"
+                )}
               </button>
-              <a className="btn btn-outline-light btn-sm" href="/create-job">Post a Job</a>
-              <a className="btn btn-outline-light btn-sm" href="/">Browse Jobs</a>
-            </div>
+              <a className="btn btn-outline-light btn-sm" href="/create-job">
+                Post a Job
+              </a>
+              <a className="btn btn-outline-light btn-sm" href="/">
+                Browse Jobs
+              </a>
+            </nav>
           </div>
-        </div>
+        </header>
 
-        {loading && <div className="alert alert-info">Loading dashboard...</div>}
+        {loading && (
+          <div className="alert alert-info" role="status" aria-live="polite">
+            <span className="spinner spinner-primary me-2" aria-hidden="true"></span>
+            Loading dashboard...
+          </div>
+        )}
+        
         {error && !loading && (
-          <div className="alert alert-danger d-flex justify-content-between align-items-center">
+          <div className="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
             <span>{error}</span>
-            <button className="btn btn-sm btn-light" onClick={fetchProfile}>Retry</button>
+            <button className="btn btn-sm btn-light" onClick={fetchProfile}>
+              Retry
+            </button>
           </div>
         )}
 
-        {profile && (
-          <div className="row g-3 mb-4">
+        {loading && !profile ? (
+          <div className="row g-3 mb-4" aria-hidden="true">
+            <div className="col-lg-3">
+              <SkeletonStatCard />
+            </div>
+            <div className="col-lg-3">
+              <SkeletonStatCard />
+            </div>
+            <div className="col-lg-3">
+              <SkeletonStatCard />
+            </div>
+            <div className="col-lg-3">
+              <SkeletonStatCard />
+            </div>
+          </div>
+        ) : profile && (
+          <section className="row g-3 mb-4" aria-labelledby="stats-heading">
+            <h2 id="stats-heading" className="sr-only">Dashboard Statistics</h2>
             <div className={hasJobs ? "col-lg-3" : "col-lg-4"}>
               <div className="card stat-card shadow-sm h-100 border-0">
                 <div className="card-body text-center">
@@ -169,7 +227,7 @@ function Dashboard({ onLogout }) {
                 </div>
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {/* Core sections */}
@@ -187,7 +245,7 @@ function Dashboard({ onLogout }) {
           <MyApplications key={`ma-${refreshKey}`} />
         </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

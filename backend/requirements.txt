@@ -1,0 +1,24 @@
+# Flask Web Framework
+Flask==3.0.0
+
+# Flask Extensions
+Flask-CORS==4.0.0
+Flask-SQLAlchemy==3.1.1
+
+# Database
+SQLAlchemy==2.0.23
+
+# Security
+Werkzeug==3.0.1
+
+# Email Support (if needed for notifications)
+Flask-Mail==0.9.1
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Date/Time handling
+python-dateutil==2.8.2
+
+# Additional utilities
+six==1.16.0

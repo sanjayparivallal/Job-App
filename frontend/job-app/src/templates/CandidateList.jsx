@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { fetchEmployerJobs, fetchApplicationsByEmployer, updateApplicationStatus } from "../utils/api";
+import { getCurrentUserId } from "../hooks/useLocalStorage";
+import { ERROR_MESSAGES, APPLICATION_STATUS } from "../utils/constants";
+import { SkeletonCard } from "../components/SkeletonLoader";
 
 function CandidateList() {
   const [applications, setApplications] = useState([]);
   const [hasJobs, setHasJobs] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [processingId, setProcessingId] = useState(null);
 
   // Open system email client immediately (user gesture) with predefined content
   const openEmailForApplication = (app) => {
@@ -43,35 +48,35 @@ function CandidateList() {
     // Trigger email compose immediately on click
     openEmailForApplication(application);
 
+    setProcessingId(application.application_id);
     try {
-      await axios.post(
-        `http://127.0.0.1:5000/applications/${application.application_id}/process`,
-        { action: "accept" }
-      );
-      // Remove from UI
+      await updateApplicationStatus(application.application_id, APPLICATION_STATUS.ACCEPTED);
+      
+      // Optimistic UI update - remove from list
       setApplications((prev) => prev.filter((a) => a.application_id !== application.application_id));
     } catch (error) {
       console.error("Error processing acceptance:", error);
       // Keep UI as-is but inform user
       alert("Email compose attempted. To finalize in app, please try again.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
-  const handleApplicationProcess = async (applicationId, action) => {
+  const handleReject = async (applicationId) => {
+    setProcessingId(applicationId);
     try {
-      const response = await axios.post(
-        `http://127.0.0.1:5000/applications/${applicationId}/process`,
-        { action }
+      await updateApplicationStatus(applicationId, APPLICATION_STATUS.REJECTED);
+      
+      // Optimistic UI update
+      setApplications((prevApps) =>
+        prevApps.filter((app) => app.application_id !== applicationId)
       );
-      if (action === "reject") {
-        setApplications((prevApps) =>
-          prevApps.filter((app) => app.application_id !== applicationId)
-        );
-        alert("Application rejected and removed.");
-      }
     } catch (error) {
-      console.error("Error processing application:", error);
-      alert("Error processing application. Check console for details.");
+      console.error("Error rejecting application:", error);
+      alert(error.message || "Error processing application.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
