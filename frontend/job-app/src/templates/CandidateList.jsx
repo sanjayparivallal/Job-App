@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { fetchEmployerJobs, fetchApplicationsByEmployer, updateApplicationStatus, exportCandidatesToCSV } from "../utils/api";
+import { updateApplicationStatus, exportCandidatesToCSV } from "../utils/api";
 import { getCurrentUserId } from "../hooks/useLocalStorage";
-import { ERROR_MESSAGES, APPLICATION_STATUS } from "../utils/constants";
-import { SkeletonCard } from "../components/SkeletonLoader";
+import { APPLICATION_STATUS } from "../utils/constants";
 
 function CandidateList() {
   const [applications, setApplications] = useState([]);
